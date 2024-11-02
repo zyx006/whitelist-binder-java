@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WTU新星工程服务器白名单绑定</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<div id="app" class="container mx-auto px-4 py-8 max-w-md">
+    <h1 class="text-3xl font-bold mb-6 text-center">用户白名单绑定</h1>
+
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6">
+        <p>用户名要求为：3-16个字符，仅字母、数字和下划线，不能为纯数字</p>
+    </div>
+
+    <form id="bindForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="studentId">
+                学号
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   id="studentId" type="text" placeholder="请输入学号" required>
+            <div id="studentIdError" class="text-red-500 text-xs italic hidden">学号必须是10位数字</div>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+                姓名
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   id="name" type="text" placeholder="请输入姓名" required>
+            <div id="nameError" class="text-red-500 text-xs italic hidden">姓名不能为空</div>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                游戏用户名
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                   id="username" type="text" placeholder="请输入游戏用户名" required>
+            <div id="usernameError" class="text-red-500 text-xs italic hidden">用户名要求为3-16个字符，仅字母、数字和下划线，且不能为纯数字</div>
+        </div>
+
+        <div class="flex items-center justify-center">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    type="submit">
+                提交
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const studentIdInput = document.getElementById('studentId');
+    const nameInput = document.getElementById('name');
+    const usernameInput = document.getElementById('username');
+    const studentIdError = document.getElementById('studentIdError');
+    const nameError = document.getElementById('nameError');
+    const usernameError = document.getElementById('usernameError');
+
+    function validateStudentId() {
+        const value = studentIdInput.value;
+        if (!/^\d{10}$/.test(value)) {
+            studentIdError.classList.remove('hidden');
+            return false;
+        }
+        studentIdError.classList.add('hidden');
+        return true;
+    }
+
+    function validateName() {
+        const value = nameInput.value.trim();
+        if (value === "") {
+            nameError.classList.remove('hidden');
+            return false;
+        }
+        nameError.classList.add('hidden');
+        return true;
+    }
+
+    function validateUsername() {
+        const value = usernameInput.value;
+        const regex = /^[a-zA-Z0-9_]{3,16}$/;
+        if (!regex.test(value) || /^\d+$/.test(value)) {
+            usernameError.classList.remove('hidden');
+            return false;
+        }
+        usernameError.classList.add('hidden');
+        return true;
+    }
+
+    studentIdInput.addEventListener('blur', validateStudentId);
+    nameInput.addEventListener('blur', validateName);
+    usernameInput.addEventListener('blur', validateUsername);
+
+    document.getElementById('bindForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!validateStudentId() || !validateName() || !validateUsername()) {
+            return;
+        }
+
+        const formData = {
+            studentId: studentIdInput.value,
+            name: nameInput.value,
+            username: usernameInput.value
+        };
+
+        try {
+            const response = await fetch('/api/bind', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert(result.message);
+                document.getElementById('bindForm').reset();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('提交失败，请稍后重试');
+            console.error('Error:', error);
+        }
+    });
+</script>
+</body>
+</html>
